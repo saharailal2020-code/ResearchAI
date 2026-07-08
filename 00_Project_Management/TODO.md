@@ -32,7 +32,7 @@
 
 - [x] System Architecture
 
-- [ ] Database Schema
+- [x] Database Schema
 
 - [ ] API Requirement
 
