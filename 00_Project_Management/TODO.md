@@ -24,4 +24,4 @@
 
 - [x] UI/UX User Flow
 
-- [ ] Module Roadmap
+- [x] Module Roadmap
