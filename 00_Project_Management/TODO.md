@@ -34,6 +34,6 @@
 
 - [x] Database Schema
 
-- [ ] API Requirement
+- [x] API Requirement
 
 - [ ] Development Setup Guide
