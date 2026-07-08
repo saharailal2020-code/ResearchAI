@@ -1,4 +1,7 @@
-import { Outlet } from 'react-router-dom'
+import { useEffect, useState } from 'react'
+import { Navigate, Outlet, useNavigate } from 'react-router-dom'
+
+import { getCurrentUser, logoutUser } from '../services/auth'
 
 const navItems = [
   'Dashboard',
@@ -11,6 +14,56 @@ const navItems = [
 ]
 
 function AppLayout() {
+  const navigate = useNavigate()
+  const [user, setUser] = useState(null)
+  const [isLoading, setIsLoading] = useState(true)
+  const [isUnauthorized, setIsUnauthorized] = useState(false)
+
+  useEffect(() => {
+    let isMounted = true
+
+    async function loadUser() {
+      try {
+        const currentUser = await getCurrentUser()
+        if (isMounted) {
+          setUser(currentUser)
+        }
+      } catch {
+        logoutUser()
+        if (isMounted) {
+          setIsUnauthorized(true)
+        }
+      } finally {
+        if (isMounted) {
+          setIsLoading(false)
+        }
+      }
+    }
+
+    loadUser()
+
+    return () => {
+      isMounted = false
+    }
+  }, [])
+
+  function handleLogout() {
+    logoutUser()
+    navigate('/login')
+  }
+
+  if (isUnauthorized) {
+    return <Navigate to="/login" replace />
+  }
+
+  if (isLoading) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-[#f6f7f9] text-sm font-medium text-slate-600">
+        Loading ResearchAI...
+      </div>
+    )
+  }
+
   return (
     <div className="min-h-screen bg-[#f6f7f9]">
       <aside className="fixed inset-y-0 left-0 hidden w-64 border-r border-slate-200 bg-white lg:block">
@@ -38,17 +91,24 @@ function AppLayout() {
               <p className="text-sm font-medium text-slate-500">MVP Workspace</p>
               <h1 className="text-xl font-semibold text-slate-950">Dashboard</h1>
             </div>
-            <a
-              className="rounded-md border border-slate-300 px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
-              href="/login"
-            >
-              Login
-            </a>
+            <div className="flex items-center gap-3">
+              <div className="hidden text-right sm:block">
+                <p className="text-sm font-semibold text-slate-900">{user?.full_name}</p>
+                <p className="text-xs text-slate-500">{user?.roles?.[0]}</p>
+              </div>
+              <button
+                className="rounded-md border border-slate-300 px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
+                onClick={handleLogout}
+                type="button"
+              >
+                Logout
+              </button>
+            </div>
           </div>
         </header>
 
         <main className="px-5 py-6">
-          <Outlet />
+          <Outlet context={{ user }} />
         </main>
       </div>
     </div>

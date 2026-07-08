@@ -15,8 +15,16 @@ const modules = [
 ]
 
 function DashboardPage() {
+  const { user } = useOutletContext()
+
   return (
     <div className="mx-auto max-w-7xl">
+      <section className="mb-6 rounded-lg border border-slate-200 bg-white p-5">
+        <p className="text-sm font-medium text-slate-500">Signed in as</p>
+        <h2 className="mt-1 text-lg font-semibold text-slate-950">{user.full_name}</h2>
+        <p className="mt-1 text-sm text-slate-600">{user.email}</p>
+      </section>
+
       <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         {stats.map((stat) => (
           <div className="rounded-lg border border-slate-200 bg-white p-5" key={stat.label}>
@@ -46,11 +54,11 @@ function DashboardPage() {
         <div className="rounded-lg border border-slate-200 bg-white p-5">
           <h2 className="text-base font-semibold text-slate-950">Backend Status</h2>
           <p className="mt-2 text-sm leading-6 text-slate-600">
-            Frontend foundation is ready. Login API integration will be connected in the
-            next Phase 4 step.
+            Login UI is connected to the FastAPI authentication endpoints and reads
+            the current user profile from the backend.
           </p>
           <div className="mt-4 rounded-md bg-emerald-50 px-3 py-2 text-sm font-medium text-emerald-700">
-            FastAPI and PostgreSQL are available locally.
+            Auth, FastAPI, and PostgreSQL are available locally.
           </div>
         </div>
       </section>
@@ -59,3 +67,4 @@ function DashboardPage() {
 }
 
 export default DashboardPage
+import { useOutletContext } from 'react-router-dom'

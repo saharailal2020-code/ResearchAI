@@ -48,4 +48,4 @@
 
 - [x] Frontend Basic Setup
 
-- [ ] Login UI and API Connection
+- [x] Login UI and API Connection
