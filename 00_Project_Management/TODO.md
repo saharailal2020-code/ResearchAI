@@ -12,6 +12,6 @@
 
 - [ ] Business Requirement
 
-- [ ] User Roles
+- [x] User Roles
 
 - [x] Feature List
