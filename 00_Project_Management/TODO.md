@@ -46,6 +46,6 @@
 
 - [x] Authentication Basic
 
-- [ ] Frontend Basic Setup
+- [x] Frontend Basic Setup
 
 - [ ] Login UI and API Connection
