@@ -7,7 +7,7 @@ class Settings(BaseSettings):
     app_env: str = "development"
     api_v1_prefix: str = "/api/v1"
     frontend_url: str = "http://localhost:5173"
-    database_url: str = "postgresql://researchai_user:password@localhost:5432/researchai_dev"
+    database_url: str = "postgresql+psycopg://researchai_user:password@localhost:5432/researchai_dev"
     secret_key: str = "change_this_secret_key"
     openai_api_key: str = "your_openai_api_key"
     file_storage_path: str = "../storage"

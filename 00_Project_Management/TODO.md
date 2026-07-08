@@ -42,7 +42,7 @@
 
 - [x] Backend Basic Setup
 
-- [ ] Database Connection
+- [x] Database Connection
 
 - [ ] Authentication Basic
 

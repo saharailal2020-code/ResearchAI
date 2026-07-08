@@ -23,3 +23,23 @@ Expected response:
   "version": "0.1.0"
 }
 ```
+
+## Database Health Check
+
+Start PostgreSQL:
+
+```powershell
+docker compose up -d postgres
+```
+
+Run backend:
+
+```powershell
+uvicorn app.main:app --reload
+```
+
+Check database:
+
+```text
+GET /api/v1/db/health
+```
