@@ -22,6 +22,6 @@
 
 - [x] Database Entity List
 
-- [ ] UI/UX User Flow
+- [x] UI/UX User Flow
 
 - [ ] Module Roadmap
