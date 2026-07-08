@@ -43,3 +43,19 @@ Check database:
 ```text
 GET /api/v1/db/health
 ```
+
+## Authentication Bootstrap
+
+Create authentication tables and the local admin user:
+
+```powershell
+cd D:\ResearchAI\backend
+.\.venv\Scripts\python.exe .\scripts\init_auth.py
+```
+
+Development admin:
+
+```text
+Email: admin@researchai.local
+Password: Admin123!
+```

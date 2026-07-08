@@ -44,7 +44,7 @@
 
 - [x] Database Connection
 
-- [ ] Authentication Basic
+- [x] Authentication Basic
 
 - [ ] Frontend Basic Setup
 

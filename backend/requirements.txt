@@ -5,3 +5,5 @@ pydantic-settings
 python-dotenv
 sqlalchemy
 psycopg[binary]
+PyJWT
+pwdlib[argon2]
