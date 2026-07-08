@@ -1,0 +1,1 @@
+"""ResearchAI backend application package."""

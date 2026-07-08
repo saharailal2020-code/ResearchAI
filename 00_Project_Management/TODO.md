@@ -37,3 +37,15 @@
 - [x] API Requirement
 
 - [x] Development Setup Guide
+
+## Phase 4
+
+- [x] Backend Basic Setup
+
+- [ ] Database Connection
+
+- [ ] Authentication Basic
+
+- [ ] Frontend Basic Setup
+
+- [ ] Login UI and API Connection
