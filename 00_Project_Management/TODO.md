@@ -15,3 +15,13 @@
 - [x] User Roles
 
 - [x] Feature List
+
+## Phase 2
+
+- [x] Functional Requirement
+
+- [ ] Database Entity List
+
+- [ ] UI/UX User Flow
+
+- [ ] Module Roadmap
