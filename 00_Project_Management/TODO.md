@@ -25,3 +25,15 @@
 - [x] UI/UX User Flow
 
 - [x] Module Roadmap
+
+## Phase 3
+
+- [x] Technology Stack Decision
+
+- [ ] System Architecture
+
+- [ ] Database Schema
+
+- [ ] API Requirement
+
+- [ ] Development Setup Guide
