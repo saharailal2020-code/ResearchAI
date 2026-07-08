@@ -20,7 +20,7 @@
 
 - [x] Functional Requirement
 
-- [ ] Database Entity List
+- [x] Database Entity List
 
 - [ ] UI/UX User Flow
 
