@@ -8,7 +8,7 @@
 
 - [x] Product Principles
 
-- [ ] Business Process
+- [x] Business Process
 
 - [ ] Business Requirement
 
