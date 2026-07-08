@@ -6,7 +6,7 @@
 
 - [x] README
 
-- [ ] Product Principles
+- [x] Product Principles
 
 - [ ] Business Process
 
