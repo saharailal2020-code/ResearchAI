@@ -30,7 +30,7 @@
 
 - [x] Technology Stack Decision
 
-- [ ] System Architecture
+- [x] System Architecture
 
 - [ ] Database Schema
 
