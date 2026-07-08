@@ -36,4 +36,4 @@
 
 - [x] API Requirement
 
-- [ ] Development Setup Guide
+- [x] Development Setup Guide
