@@ -69,6 +69,20 @@ cd D:\ResearchAI\backend
 .\.venv\Scripts\python.exe .\scripts\init_clients.py
 ```
 
+Upgrade existing local database to Client Management v0.2:
+
+```powershell
+cd D:\ResearchAI\backend
+.\.venv\Scripts\python.exe .\scripts\upgrade_client_management_v02.py
+```
+
+Client Management v0.2 adds fields for Client 360:
+
+```text
+Logo, address, city, website, last activity, next follow up,
+customer since, richer contacts, and activity timeline.
+```
+
 ## Proposal Management Bootstrap
 
 Create proposal management tables:

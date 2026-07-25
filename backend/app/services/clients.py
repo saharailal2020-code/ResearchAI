@@ -11,9 +11,17 @@ from app.schemas.client import ClientCreate
 def create_client(db: Session, payload: ClientCreate, current_user: User) -> Client:
     client = Client(
         client_name=payload.client_name.strip(),
+        logo_url=payload.logo_url,
+        address=payload.address,
+        city=payload.city,
+        province=payload.province,
+        country=payload.country,
+        website=payload.website,
         industry=payload.industry,
         client_type=payload.client_type,
-        status="active",
+        status=payload.status or "Prospect",
+        next_follow_up_at=payload.next_follow_up_at,
+        customer_since=payload.customer_since,
         notes=payload.notes,
         created_by=current_user.id,
     )
@@ -27,7 +35,11 @@ def create_client(db: Session, payload: ClientCreate, current_user: User) -> Cli
             position=payload.primary_contact.position,
             email=str(payload.primary_contact.email) if payload.primary_contact.email else None,
             phone=payload.primary_contact.phone,
+            mobile_phone=payload.primary_contact.mobile_phone,
+            whatsapp_number=payload.primary_contact.whatsapp_number,
+            contact_type=payload.primary_contact.contact_type,
             is_primary=payload.primary_contact.is_primary,
+            is_decision_maker=payload.primary_contact.is_decision_maker,
             notes=payload.primary_contact.notes,
         )
         db.add(contact)
