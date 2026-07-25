@@ -1,10 +1,30 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 
-import { getClient, getClientActivities } from '../services/clients'
+import {
+  createClientContact,
+  deleteClientContact,
+  getClient,
+  getClientActivities,
+  setPrimaryClientContact,
+  updateClientContact,
+} from '../services/clients'
 import { getProposals } from '../services/proposals'
 
 const tabs = ['Overview', 'Contacts', 'Activities', 'Proposals', 'Projects', 'Documents']
+
+const emptyContactForm = {
+  contact_name: '',
+  position: '',
+  email: '',
+  phone: '',
+  mobile_phone: '',
+  whatsapp_number: '',
+  contact_type: '',
+  is_primary: false,
+  is_decision_maker: false,
+  notes: '',
+}
 
 const statusStyles = {
   active: 'bg-emerald-50 text-emerald-700 ring-emerald-200',
@@ -45,6 +65,14 @@ function formatCurrency(value) {
     maximumFractionDigits: 0,
     style: 'currency',
   }).format(amount)
+}
+
+function isValidPhone(value) {
+  if (!value) {
+    return true
+  }
+
+  return /^\+?[0-9][0-9\s().-]{6,24}$/.test(value)
 }
 
 function InfoItem({ label, value }) {
@@ -94,43 +122,144 @@ function ClientDetailPage() {
   const [activities, setActivities] = useState([])
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState('')
+  const [contactForm, setContactForm] = useState(emptyContactForm)
+  const [editingContactId, setEditingContactId] = useState(null)
+  const [contactError, setContactError] = useState('')
+  const [contactSuccess, setContactSuccess] = useState('')
+  const [isSavingContact, setIsSavingContact] = useState(false)
 
-  useEffect(() => {
-    let isMounted = true
-
-    async function loadClientDetail() {
+  const loadClientDetail = useCallback(async ({ showLoading = true } = {}) => {
+    if (showLoading) {
       setIsLoading(true)
-      setError('')
-
-      try {
-        const [clientData, proposalData, activityData] = await Promise.all([
-          getClient(clientId),
-          getProposals({ client_id: clientId }),
-          getClientActivities(clientId),
-        ])
-
-        if (isMounted) {
-          setClient(clientData)
-          setProposals(proposalData)
-          setActivities(activityData)
-        }
-      } catch {
-        if (isMounted) {
-          setError('Client detail belum bisa dimuat. Pastikan backend sedang berjalan.')
-        }
-      } finally {
-        if (isMounted) {
-          setIsLoading(false)
-        }
-      }
     }
+    setError('')
 
-    loadClientDetail()
+    try {
+      const [clientData, proposalData, activityData] = await Promise.all([
+        getClient(clientId),
+        getProposals({ client_id: clientId }),
+        getClientActivities(clientId),
+      ])
 
-    return () => {
-      isMounted = false
+      setClient(clientData)
+      setProposals(proposalData)
+      setActivities(activityData)
+    } catch {
+      setError('Client detail belum bisa dimuat. Pastikan backend sedang berjalan.')
+    } finally {
+      setIsLoading(false)
     }
   }, [clientId])
+
+  useEffect(() => {
+    loadClientDetail()
+  }, [loadClientDetail])
+
+  function updateContactForm(field, value) {
+    setContactForm((current) => ({ ...current, [field]: value }))
+  }
+
+  function resetContactForm() {
+    setContactForm(emptyContactForm)
+    setEditingContactId(null)
+  }
+
+  function startEditContact(contact) {
+    setContactError('')
+    setContactSuccess('')
+    setEditingContactId(contact.id)
+    setContactForm({
+      contact_name: contact.contact_name || '',
+      position: contact.position || '',
+      email: contact.email || '',
+      phone: contact.phone || '',
+      mobile_phone: contact.mobile_phone || '',
+      whatsapp_number: contact.whatsapp_number || '',
+      contact_type: contact.contact_type || '',
+      is_primary: Boolean(contact.is_primary),
+      is_decision_maker: Boolean(contact.is_decision_maker),
+      notes: contact.notes || '',
+    })
+  }
+
+  function buildContactPayload() {
+    return {
+      contact_name: contactForm.contact_name.trim(),
+      position: contactForm.position.trim() || null,
+      email: contactForm.email.trim() || null,
+      phone: contactForm.phone.trim() || null,
+      mobile_phone: contactForm.mobile_phone.trim() || null,
+      whatsapp_number: contactForm.whatsapp_number.trim() || null,
+      contact_type: contactForm.contact_type.trim() || null,
+      is_primary: contactForm.is_primary,
+      is_decision_maker: contactForm.is_decision_maker,
+      notes: contactForm.notes.trim() || null,
+    }
+  }
+
+  async function handleContactSubmit(event) {
+    event.preventDefault()
+    setContactError('')
+    setContactSuccess('')
+
+    if (!contactForm.contact_name.trim()) {
+      setContactError('Nama contact wajib diisi.')
+      return
+    }
+
+    if (![contactForm.phone, contactForm.mobile_phone, contactForm.whatsapp_number].every(isValidPhone)) {
+      setContactError('Nomor telepon/HP belum sesuai format.')
+      return
+    }
+
+    setIsSavingContact(true)
+
+    try {
+      const payload = buildContactPayload()
+      if (editingContactId) {
+        await updateClientContact(clientId, editingContactId, payload)
+        setContactSuccess('Contact person berhasil diperbarui.')
+      } else {
+        await createClientContact(clientId, payload)
+        setContactSuccess('Contact person berhasil ditambahkan.')
+      }
+      resetContactForm()
+      await loadClientDetail({ showLoading: false })
+    } catch {
+      setContactError('Contact person belum berhasil disimpan. Cek email, nomor HP, atau koneksi backend.')
+    } finally {
+      setIsSavingContact(false)
+    }
+  }
+
+  async function handleSetPrimary(contactId) {
+    setContactError('')
+    setContactSuccess('')
+
+    try {
+      await setPrimaryClientContact(clientId, contactId)
+      setContactSuccess('Primary contact berhasil diperbarui.')
+      await loadClientDetail({ showLoading: false })
+    } catch {
+      setContactError('Primary contact belum berhasil diperbarui.')
+    }
+  }
+
+  async function handleDeleteContact(contactId) {
+    setContactError('')
+    setContactSuccess('')
+
+    try {
+      await deleteClientContact(clientId, contactId)
+      if (editingContactId === contactId) {
+        resetContactForm()
+      }
+      setContactSuccess('Contact person berhasil dihapus.')
+      await loadClientDetail({ showLoading: false })
+    } catch {
+      setContactError('Contact person belum berhasil dihapus.')
+    }
+  }
 
   const primaryContact = useMemo(() => {
     if (!client?.contacts?.length) {
@@ -194,7 +323,7 @@ function ClientDetailPage() {
                   </span>
                 </div>
                 <p className="mt-2 text-sm text-slate-500">
-                  {[client.industry || 'Industry not set', client.city || 'City not set', client.client_type].filter(Boolean).join(' • ')}
+                  {[client.industry || 'Industry not set', client.city || 'City not set', client.client_type].filter(Boolean).join(' / ')}
                 </p>
               </div>
             </div>
@@ -261,43 +390,215 @@ function ClientDetailPage() {
           )}
 
           {activeTab === 'Contacts' && (
-            <div className="rounded-lg border border-slate-200">
-              <div className="border-b border-slate-200 px-5 py-4">
-                <h3 className="text-base font-semibold text-slate-950">Contact Person</h3>
-              </div>
-              {client.contacts.length === 0 ? (
-                <div className="p-5">
-                  <EmptyState>Belum ada contact person.</EmptyState>
+            <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_420px]">
+              <div className="rounded-lg border border-slate-200">
+                <div className="border-b border-slate-200 px-5 py-4">
+                  <h3 className="text-base font-semibold text-slate-950">Contact Person</h3>
                 </div>
-              ) : (
-                <div className="divide-y divide-slate-200">
-                  {client.contacts.map((contact) => (
-                    <div className="grid gap-4 px-5 py-4 lg:grid-cols-[minmax(0,1fr)_180px_220px]" key={contact.id}>
-                      <div>
-                        <div className="flex flex-wrap items-center gap-2">
-                          <p className="font-semibold text-slate-950">{contact.contact_name}</p>
-                          {contact.is_primary && (
-                            <span className="rounded-full bg-slate-950 px-2.5 py-1 text-xs font-semibold text-white">
-                              Primary
-                            </span>
-                          )}
+                {client.contacts.length === 0 ? (
+                  <div className="p-5">
+                    <EmptyState>Belum ada contact person.</EmptyState>
+                  </div>
+                ) : (
+                  <div className="divide-y divide-slate-200">
+                    {client.contacts.map((contact) => (
+                      <div className="px-5 py-4" key={contact.id}>
+                        <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
+                          <div>
+                            <div className="flex flex-wrap items-center gap-2">
+                              <p className="font-semibold text-slate-950">{contact.contact_name}</p>
+                              {contact.is_primary && (
+                                <span className="rounded-full bg-slate-950 px-2.5 py-1 text-xs font-semibold text-white">
+                                  Primary
+                                </span>
+                              )}
+                              {contact.is_decision_maker && (
+                                <span className="rounded-full bg-sky-50 px-2.5 py-1 text-xs font-semibold text-sky-700">
+                                  Decision Maker
+                                </span>
+                              )}
+                            </div>
+                            <p className="mt-1 text-sm text-slate-500">{contact.position || contact.contact_type || '-'}</p>
+                          </div>
+
+                          <div className="flex flex-wrap items-center gap-2">
+                            {!contact.is_primary && (
+                              <button
+                                className="rounded-md border border-slate-300 px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50"
+                                onClick={() => handleSetPrimary(contact.id)}
+                                type="button"
+                              >
+                                Set Primary
+                              </button>
+                            )}
+                            <button
+                              className="rounded-md border border-slate-300 px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50"
+                              onClick={() => startEditContact(contact)}
+                              type="button"
+                            >
+                              Edit
+                            </button>
+                            <button
+                              className="rounded-md border border-red-200 px-3 py-2 text-xs font-semibold text-red-700 hover:bg-red-50"
+                              onClick={() => handleDeleteContact(contact.id)}
+                              type="button"
+                            >
+                              Delete
+                            </button>
+                          </div>
                         </div>
-                        <p className="mt-1 text-sm text-slate-500">{contact.position || contact.contact_type || '-'}</p>
+
+                        <div className="mt-4 grid gap-4 sm:grid-cols-3">
+                          <InfoItem label="Phone" value={contact.mobile_phone || contact.phone || contact.whatsapp_number} />
+                          <InfoItem label="Email" value={contact.email} />
+                          <InfoItem label="Type" value={contact.contact_type} />
+                        </div>
                       </div>
-                      <div>
-                        <p className="text-xs font-medium uppercase text-slate-400">Phone</p>
-                        <p className="mt-1 text-sm font-medium text-slate-800">
-                          {contact.mobile_phone || contact.phone || contact.whatsapp_number || '-'}
-                        </p>
-                      </div>
-                      <div>
-                        <p className="text-xs font-medium uppercase text-slate-400">Email</p>
-                        <p className="mt-1 break-all text-sm font-medium text-slate-800">{contact.email || '-'}</p>
-                      </div>
-                    </div>
-                  ))}
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              <div className="rounded-lg border border-slate-200 p-5">
+                <div className="flex items-start justify-between gap-3">
+                  <div>
+                    <p className="text-sm font-medium text-slate-500">
+                      {editingContactId ? 'Edit Contact' : 'New Contact'}
+                    </p>
+                    <h3 className="mt-1 text-base font-semibold text-slate-950">
+                      {editingContactId ? 'Update Contact Person' : 'Add Contact Person'}
+                    </h3>
+                  </div>
+                  {editingContactId && (
+                    <button
+                      className="rounded-md border border-slate-300 px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50"
+                      onClick={resetContactForm}
+                      type="button"
+                    >
+                      Cancel
+                    </button>
+                  )}
                 </div>
-              )}
+
+                {contactError && (
+                  <div className="mt-4 rounded-md bg-red-50 px-3 py-2 text-sm font-medium text-red-700">
+                    {contactError}
+                  </div>
+                )}
+
+                {contactSuccess && (
+                  <div className="mt-4 rounded-md bg-emerald-50 px-3 py-2 text-sm font-medium text-emerald-700">
+                    {contactSuccess}
+                  </div>
+                )}
+
+                <form className="mt-5 space-y-4" onSubmit={handleContactSubmit}>
+                  <label className="block">
+                    <span className="text-sm font-medium text-slate-700">Contact Name</span>
+                    <input
+                      className="mt-1 h-10 w-full rounded-md border border-slate-300 px-3 text-sm outline-none focus:border-slate-950"
+                      onChange={(event) => updateContactForm('contact_name', event.target.value)}
+                      value={contactForm.contact_name}
+                    />
+                  </label>
+
+                  <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-1">
+                    <label className="block">
+                      <span className="text-sm font-medium text-slate-700">Position</span>
+                      <input
+                        className="mt-1 h-10 w-full rounded-md border border-slate-300 px-3 text-sm outline-none focus:border-slate-950"
+                        onChange={(event) => updateContactForm('position', event.target.value)}
+                        value={contactForm.position}
+                      />
+                    </label>
+                    <label className="block">
+                      <span className="text-sm font-medium text-slate-700">Contact Type</span>
+                      <input
+                        className="mt-1 h-10 w-full rounded-md border border-slate-300 px-3 text-sm outline-none focus:border-slate-950"
+                        onChange={(event) => updateContactForm('contact_type', event.target.value)}
+                        placeholder="Primary PIC, Finance, Procurement"
+                        value={contactForm.contact_type}
+                      />
+                    </label>
+                  </div>
+
+                  <label className="block">
+                    <span className="text-sm font-medium text-slate-700">Email</span>
+                    <input
+                      className="mt-1 h-10 w-full rounded-md border border-slate-300 px-3 text-sm outline-none focus:border-slate-950"
+                      onChange={(event) => updateContactForm('email', event.target.value)}
+                      type="email"
+                      value={contactForm.email}
+                    />
+                  </label>
+
+                  <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-1">
+                    <label className="block">
+                      <span className="text-sm font-medium text-slate-700">Phone</span>
+                      <input
+                        className="mt-1 h-10 w-full rounded-md border border-slate-300 px-3 text-sm outline-none focus:border-slate-950"
+                        onChange={(event) => updateContactForm('phone', event.target.value)}
+                        value={contactForm.phone}
+                      />
+                    </label>
+                    <label className="block">
+                      <span className="text-sm font-medium text-slate-700">Mobile Phone</span>
+                      <input
+                        className="mt-1 h-10 w-full rounded-md border border-slate-300 px-3 text-sm outline-none focus:border-slate-950"
+                        onChange={(event) => updateContactForm('mobile_phone', event.target.value)}
+                        value={contactForm.mobile_phone}
+                      />
+                    </label>
+                  </div>
+
+                  <label className="block">
+                    <span className="text-sm font-medium text-slate-700">WhatsApp Number</span>
+                    <input
+                      className="mt-1 h-10 w-full rounded-md border border-slate-300 px-3 text-sm outline-none focus:border-slate-950"
+                      onChange={(event) => updateContactForm('whatsapp_number', event.target.value)}
+                      value={contactForm.whatsapp_number}
+                    />
+                  </label>
+
+                  <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-1">
+                    <label className="flex items-center gap-2 text-sm font-medium text-slate-700">
+                      <input
+                        checked={contactForm.is_primary}
+                        className="h-4 w-4 rounded border-slate-300"
+                        onChange={(event) => updateContactForm('is_primary', event.target.checked)}
+                        type="checkbox"
+                      />
+                      Primary Contact
+                    </label>
+                    <label className="flex items-center gap-2 text-sm font-medium text-slate-700">
+                      <input
+                        checked={contactForm.is_decision_maker}
+                        className="h-4 w-4 rounded border-slate-300"
+                        onChange={(event) => updateContactForm('is_decision_maker', event.target.checked)}
+                        type="checkbox"
+                      />
+                      Decision Maker
+                    </label>
+                  </div>
+
+                  <label className="block">
+                    <span className="text-sm font-medium text-slate-700">Notes</span>
+                    <textarea
+                      className="mt-1 min-h-20 w-full resize-y rounded-md border border-slate-300 px-3 py-2 text-sm outline-none focus:border-slate-950"
+                      onChange={(event) => updateContactForm('notes', event.target.value)}
+                      value={contactForm.notes}
+                    />
+                  </label>
+
+                  <button
+                    className="h-11 w-full rounded-md bg-slate-950 text-sm font-semibold text-white hover:bg-slate-800 disabled:cursor-not-allowed disabled:bg-slate-400"
+                    disabled={isSavingContact}
+                    type="submit"
+                  >
+                    {isSavingContact ? 'Saving contact...' : editingContactId ? 'Update Contact' : 'Save Contact'}
+                  </button>
+                </form>
+              </div>
             </div>
           )}
 

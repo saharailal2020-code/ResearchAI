@@ -1,7 +1,19 @@
 from datetime import datetime
 import uuid
+import re
 
-from pydantic import BaseModel, ConfigDict, EmailStr
+from pydantic import BaseModel, ConfigDict, EmailStr, field_validator
+
+
+PHONE_PATTERN = re.compile(r"^\+?[0-9][0-9\s().-]{6,24}$")
+
+
+def validate_phone_number(value: str | None) -> str | None:
+    if value is None or value == "":
+        return value
+    if not PHONE_PATTERN.match(value):
+        raise ValueError("Phone number format is invalid")
+    return value
 
 
 class ClientContactCreate(BaseModel):
@@ -15,6 +27,23 @@ class ClientContactCreate(BaseModel):
     is_primary: bool = True
     is_decision_maker: bool = False
     notes: str | None = None
+
+    _validate_phone = field_validator("phone", "mobile_phone", "whatsapp_number")(validate_phone_number)
+
+
+class ClientContactUpdate(BaseModel):
+    contact_name: str | None = None
+    position: str | None = None
+    email: EmailStr | None = None
+    phone: str | None = None
+    mobile_phone: str | None = None
+    whatsapp_number: str | None = None
+    contact_type: str | None = None
+    is_primary: bool | None = None
+    is_decision_maker: bool | None = None
+    notes: str | None = None
+
+    _validate_phone = field_validator("phone", "mobile_phone", "whatsapp_number")(validate_phone_number)
 
 
 class ClientCreate(BaseModel):
@@ -47,6 +76,7 @@ class ClientContactResponse(BaseModel):
     is_decision_maker: bool
     notes: str | None
     created_at: datetime
+    updated_at: datetime
 
     model_config = ConfigDict(from_attributes=True)
 
