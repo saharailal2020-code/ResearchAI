@@ -56,6 +56,6 @@
 
 - [x] Client Management Frontend
 
-- [ ] Proposal Management Backend
+- [x] Proposal Management Backend
 
 - [ ] Proposal Management Frontend

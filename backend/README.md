@@ -68,3 +68,22 @@ Create client management tables:
 cd D:\ResearchAI\backend
 .\.venv\Scripts\python.exe .\scripts\init_clients.py
 ```
+
+## Proposal Management Bootstrap
+
+Create proposal management tables:
+
+```powershell
+cd D:\ResearchAI\backend
+.\.venv\Scripts\python.exe .\scripts\init_proposals.py
+```
+
+Main proposal endpoints:
+
+```text
+GET /api/v1/proposals
+POST /api/v1/proposals
+GET /api/v1/proposals/{proposal_id}
+PATCH /api/v1/proposals/{proposal_id}
+PATCH /api/v1/proposals/{proposal_id}/status
+```

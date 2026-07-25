@@ -1,6 +1,6 @@
 from fastapi import APIRouter
 
-from app.api.v1 import auth, clients, db
+from app.api.v1 import auth, clients, db, proposals
 
 router = APIRouter()
 
@@ -17,4 +17,5 @@ def api_health_check() -> dict[str, str]:
 api_router = router
 api_router.include_router(auth.router)
 api_router.include_router(clients.router)
+api_router.include_router(proposals.router)
 api_router.include_router(db.router)

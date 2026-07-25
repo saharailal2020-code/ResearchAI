@@ -29,6 +29,7 @@ class Client(Base):
         back_populates="client",
         cascade="all, delete-orphan",
     )
+    proposals: Mapped[list["Proposal"]] = relationship(back_populates="client")
 
 
 class ClientContact(Base):
