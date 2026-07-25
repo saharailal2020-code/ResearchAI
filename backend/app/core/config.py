@@ -8,7 +8,7 @@ class Settings(BaseSettings):
     api_v1_prefix: str = "/api/v1"
     frontend_url: str = "http://localhost:5173"
     database_url: str = "postgresql+psycopg://researchai_user:password@localhost:5432/researchai_dev"
-    secret_key: str = "change_this_secret_key"
+    secret_key: str = "change_this_secret_key_for_researchai_local_development"
     access_token_expire_minutes: int = 60
     openai_api_key: str = "your_openai_api_key"
     file_storage_path: str = "../storage"

@@ -59,3 +59,12 @@ Development admin:
 Email: admin@researchai.local
 Password: Admin123!
 ```
+
+## Client Management Bootstrap
+
+Create client management tables:
+
+```powershell
+cd D:\ResearchAI\backend
+.\.venv\Scripts\python.exe .\scripts\init_clients.py
+```

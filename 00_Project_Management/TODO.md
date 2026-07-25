@@ -49,3 +49,13 @@
 - [x] Frontend Basic Setup
 
 - [x] Login UI and API Connection
+
+## Phase 5
+
+- [x] Client Management Backend
+
+- [ ] Client Management Frontend
+
+- [ ] Proposal Management Backend
+
+- [ ] Proposal Management Frontend
