@@ -3,7 +3,7 @@ import uuid
 from sqlalchemy import Select, func, select
 from sqlalchemy.orm import Session, selectinload
 
-from app.models.client import Client, ClientContact
+from app.models.client import Client, ClientActivity, ClientContact
 from app.models.user import User
 from app.schemas.client import ClientCreate
 
@@ -69,3 +69,12 @@ def get_client_by_id(db: Session, client_id: uuid.UUID) -> Client | None:
         .where(Client.id == client_id)
     )
     return db.execute(statement).scalar_one_or_none()
+
+
+def list_client_activities(db: Session, client_id: uuid.UUID) -> list[ClientActivity]:
+    statement = (
+        select(ClientActivity)
+        .where(ClientActivity.client_id == client_id)
+        .order_by(ClientActivity.activity_at.desc())
+    )
+    return list(db.execute(statement).scalars().all())

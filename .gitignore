@@ -18,6 +18,7 @@ dist/
 build/
 
 storage/
+artifacts/
 *.log
 .dev-pids.tmp
 

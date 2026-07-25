@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
+import { Link } from 'react-router-dom'
 
 import { createClient, getClients } from '../services/clients'
 
@@ -152,10 +153,17 @@ function ClientsPage() {
             </div>
           ) : (
             clients.map((client) => (
-              <div className="grid gap-3 px-5 py-4 lg:grid-cols-[minmax(0,1fr)_160px_120px]" key={client.id}>
+              <div
+                className="grid gap-3 px-5 py-4 hover:bg-slate-50 lg:grid-cols-[minmax(0,1fr)_160px_120px]"
+                key={client.id}
+              >
                 <div>
-                  <p className="font-semibold text-slate-950">{client.client_name}</p>
-                  <p className="mt-1 text-sm text-slate-500">{client.industry || 'Industry not set'}</p>
+                  <Link className="font-semibold text-slate-950 hover:text-slate-700" to={`/clients/${client.id}`}>
+                    {client.client_name}
+                  </Link>
+                  <p className="mt-1 text-sm text-slate-500">
+                    {[client.industry || 'Industry not set', client.city].filter(Boolean).join(' • ')}
+                  </p>
                 </div>
                 <div>
                   <p className="text-xs font-medium uppercase text-slate-400">Type</p>

@@ -6,8 +6,8 @@ from sqlalchemy.orm import Session
 from app.api.deps import get_current_user
 from app.db.session import get_db
 from app.models.user import User
-from app.schemas.client import ClientCreate, ClientDetail, ClientListItem
-from app.services.clients import create_client, get_client_by_id, list_clients
+from app.schemas.client import ClientActivityResponse, ClientCreate, ClientDetail, ClientListItem
+from app.services.clients import create_client, get_client_by_id, list_client_activities, list_clients
 
 router = APIRouter(prefix="/clients", tags=["clients"])
 
@@ -44,3 +44,18 @@ def get_client(
             detail="Client not found",
         )
     return client
+
+
+@router.get("/{client_id}/activities", response_model=list[ClientActivityResponse])
+def get_client_activities(
+    client_id: uuid.UUID,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+) -> list[ClientActivityResponse]:
+    client = get_client_by_id(db, client_id)
+    if client is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Client not found",
+        )
+    return list_client_activities(db, client_id)

@@ -59,7 +59,8 @@ function AppLayout() {
     navigate('/login')
   }
 
-  const pageTitle = pageTitles[location.pathname] || 'Dashboard'
+  const pageTitle =
+    pageTitles[location.pathname] || (location.pathname.startsWith('/clients/') ? 'Client Detail' : 'Dashboard')
 
   if (isUnauthorized) {
     return <Navigate to="/login" replace />

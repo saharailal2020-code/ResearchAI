@@ -51,6 +51,19 @@ class ClientContactResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
 
+class ClientActivityResponse(BaseModel):
+    id: uuid.UUID
+    activity_type: str
+    activity_title: str
+    activity_description: str | None
+    source_type: str | None
+    source_id: uuid.UUID | None
+    activity_at: datetime
+    created_at: datetime
+
+    model_config = ConfigDict(from_attributes=True)
+
+
 class ClientListItem(BaseModel):
     id: uuid.UUID
     client_name: str
