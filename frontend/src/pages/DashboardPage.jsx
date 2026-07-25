@@ -1,3 +1,5 @@
+import { useOutletContext } from 'react-router-dom'
+
 const stats = [
   { label: 'Active Projects', value: '0' },
   { label: 'Running Proposals', value: '0' },
@@ -67,4 +69,3 @@ function DashboardPage() {
 }
 
 export default DashboardPage
-import { useOutletContext } from 'react-router-dom'
