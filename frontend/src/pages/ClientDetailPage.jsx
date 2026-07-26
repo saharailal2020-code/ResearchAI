@@ -11,7 +11,14 @@ import {
 } from '../services/clients'
 import { getProposals } from '../services/proposals'
 
-const tabs = ['Overview', 'Contacts', 'Activities', 'Proposals', 'Projects', 'Documents']
+const tabs = [
+  { key: 'Overview', label: 'Ringkasan' },
+  { key: 'Contacts', label: 'Kontak' },
+  { key: 'Activities', label: 'Aktivitas' },
+  { key: 'Proposals', label: 'Proposal' },
+  { key: 'Projects', label: 'Project' },
+  { key: 'Documents', label: 'Dokumen' },
+]
 
 const emptyContactForm = {
   contact_name: '',
@@ -40,10 +47,71 @@ function normalizeStatus(status) {
 
 function statusLabel(status) {
   const normalized = normalizeStatus(status)
-  return normalized
-    .split(' ')
-    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-    .join(' ')
+  const labels = {
+    active: 'Aktif',
+    prospect: 'Prospek',
+    negotiation: 'Negosiasi',
+    dormant: 'Dormant',
+    inactive: 'Tidak Aktif',
+    draft: 'Draft',
+    sent: 'Dikirim',
+    revised: 'Revisi',
+    approved: 'Disetujui',
+    rejected: 'Ditolak',
+  }
+
+  return (
+    labels[normalized] ||
+    normalized
+      .split(' ')
+      .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(' ')
+  )
+}
+
+function clientTypeLabel(type) {
+  const normalized = String(type || '').toLowerCase()
+  const labels = {
+    prospect: 'Prospek',
+    active_client: 'Client Aktif',
+    partner: 'Partner',
+    enterprise: 'Enterprise',
+  }
+
+  return labels[normalized] || type || null
+}
+
+function translateActivityTitle(title) {
+  const labels = {
+    'Proposal approved': 'Proposal disetujui',
+    'Proposal marked for revision': 'Proposal perlu revisi',
+    'Proposal sent to client': 'Proposal dikirim ke client',
+    'Proposal updated': 'Proposal diperbarui',
+    'Proposal created': 'Proposal dibuat',
+    'Proposal rejected': 'Proposal ditolak',
+    'Contact person added': 'Contact person ditambahkan',
+    'Contact person updated': 'Contact person diperbarui',
+    'Contact person deleted': 'Contact person dihapus',
+  }
+
+  return labels[title] || title
+}
+
+function translateActivityDescription(description) {
+  if (!description) {
+    return description
+  }
+
+  return description
+    .replace(/^(.+) was approved\.$/, 'Proposal $1 telah disetujui.')
+    .replace(/^(.+) requires revision\.$/, 'Proposal $1 perlu direvisi.')
+    .replace(/^(.+) was sent to client\.$/, 'Proposal $1 telah dikirim ke client.')
+    .replace(/^(.+) details were updated\.$/, 'Detail proposal $1 telah diperbarui.')
+    .replace(/^(.+) was created\.$/, 'Proposal $1 telah dibuat.')
+    .replace(/^(.+) was rejected\.$/, 'Proposal $1 telah ditolak.')
+    .replace(/^(.+) was added as a client contact\.$/, '$1 ditambahkan sebagai contact person client.')
+    .replace(/^(.+) contact details were updated\.$/, 'Detail contact person $1 telah diperbarui.')
+    .replace(/^(.+) was removed from client contacts\.$/, '$1 dihapus dari daftar contact person client.')
 }
 
 function formatDate(value) {
@@ -238,10 +306,10 @@ function ClientDetailPage() {
 
     try {
       await setPrimaryClientContact(clientId, contactId)
-      setContactSuccess('Primary contact berhasil diperbarui.')
+      setContactSuccess('Contact person utama berhasil diperbarui.')
       await loadClientDetail({ showLoading: false })
     } catch {
-      setContactError('Primary contact belum berhasil diperbarui.')
+      setContactError('Contact person utama belum berhasil diperbarui.')
     }
   }
 
@@ -280,7 +348,7 @@ function ClientDetailPage() {
   if (isLoading) {
     return (
       <div className="mx-auto max-w-7xl rounded-lg border border-slate-200 bg-white px-5 py-8 text-sm font-medium text-slate-500">
-        Loading client detail...
+        Memuat detail client...
       </div>
     )
   }
@@ -289,7 +357,7 @@ function ClientDetailPage() {
     return (
       <div className="mx-auto max-w-7xl">
         <Link className="text-sm font-medium text-slate-600 hover:text-slate-950" to="/clients">
-          Back to Clients
+          Kembali ke Client
         </Link>
         <div className="mt-4 rounded-lg border border-red-200 bg-red-50 px-5 py-4 text-sm font-medium text-red-700">
           {error || 'Client tidak ditemukan.'}
@@ -306,7 +374,7 @@ function ClientDetailPage() {
     <div className="mx-auto max-w-7xl">
       <div className="mb-4">
         <Link className="text-sm font-medium text-slate-600 hover:text-slate-950" to="/clients">
-          Back to Clients
+          Kembali ke Client
         </Link>
       </div>
 
@@ -323,7 +391,9 @@ function ClientDetailPage() {
                   </span>
                 </div>
                 <p className="mt-2 text-sm text-slate-500">
-                  {[client.industry || 'Industry not set', client.city || 'City not set', client.client_type].filter(Boolean).join(' / ')}
+                  {[client.industry || 'Industri belum diisi', client.city || 'Kota belum diisi', clientTypeLabel(client.client_type)]
+                    .filter(Boolean)
+                    .join(' / ')}
                 </p>
               </div>
             </div>
@@ -331,7 +401,7 @@ function ClientDetailPage() {
             <div className="grid gap-4 sm:grid-cols-3 lg:min-w-[520px]">
               <InfoItem label="Total Proposal" value={proposals.length} />
               <InfoItem label="Total Project" value="0" />
-              <InfoItem label="Contract Value" value={formatCurrency(totalContractValue)} />
+              <InfoItem label="Nilai Kontrak" value={formatCurrency(totalContractValue)} />
             </div>
           </div>
         </div>
@@ -341,15 +411,15 @@ function ClientDetailPage() {
             {tabs.map((tab) => (
               <button
                 className={`border-b-2 px-3 py-3 text-sm font-semibold ${
-                  activeTab === tab
+                  activeTab === tab.key
                     ? 'border-slate-950 text-slate-950'
                     : 'border-transparent text-slate-500 hover:text-slate-900'
                 }`}
-                key={tab}
-                onClick={() => setActiveTab(tab)}
+                key={tab.key}
+                onClick={() => setActiveTab(tab.key)}
                 type="button"
               >
-                {tab}
+                {tab.label}
               </button>
             ))}
           </div>
@@ -359,31 +429,31 @@ function ClientDetailPage() {
           {activeTab === 'Overview' && (
             <div className="grid gap-6 xl:grid-cols-[1fr_360px]">
               <div className="rounded-lg border border-slate-200 p-5">
-                <h3 className="text-base font-semibold text-slate-950">Client Overview</h3>
+                <h3 className="text-base font-semibold text-slate-950">Ringkasan Client</h3>
                 <div className="mt-5 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-                  <InfoItem label="Industry" value={client.industry} />
-                  <InfoItem label="City" value={client.city} />
+                  <InfoItem label="Industri" value={client.industry} />
+                  <InfoItem label="Kota" value={client.city} />
                   <InfoItem label="Status" value={statusLabel(client.status)} />
-                  <InfoItem label="Customer Since" value={formatDate(client.customer_since)} />
-                  <InfoItem label="Last Activity" value={formatDate(client.last_activity_at)} />
-                  <InfoItem label="Next Follow Up" value={formatDate(client.next_follow_up_at)} />
+                  <InfoItem label="Menjadi Client Sejak" value={formatDate(client.customer_since)} />
+                  <InfoItem label="Aktivitas Terakhir" value={formatDate(client.last_activity_at)} />
+                  <InfoItem label="Follow Up Berikutnya" value={formatDate(client.next_follow_up_at)} />
                   <InfoItem label="Total Proposal" value={proposals.length} />
                   <InfoItem label="Total Project" value="0" />
-                  <InfoItem label="Total Contract Value" value={formatCurrency(totalContractValue)} />
+                  <InfoItem label="Total Nilai Kontrak" value={formatCurrency(totalContractValue)} />
                 </div>
               </div>
 
               <div className="rounded-lg border border-slate-200 p-5">
-                <h3 className="text-base font-semibold text-slate-950">Primary Contact</h3>
+                <h3 className="text-base font-semibold text-slate-950">Contact Person Utama</h3>
                 {primaryContact ? (
                   <div className="mt-5 space-y-4">
                     <InfoItem label="PIC Utama" value={primaryContact.contact_name} />
-                    <InfoItem label="Position" value={primaryContact.position} />
+                    <InfoItem label="Jabatan" value={primaryContact.position} />
                     <InfoItem label="Nomor HP" value={primaryPhone} />
                     <InfoItem label="Email" value={primaryContact.email} />
                   </div>
                 ) : (
-                  <EmptyState>Belum ada primary contact.</EmptyState>
+                  <EmptyState>Belum ada contact person utama.</EmptyState>
                 )}
               </div>
             </div>
@@ -409,12 +479,12 @@ function ClientDetailPage() {
                               <p className="font-semibold text-slate-950">{contact.contact_name}</p>
                               {contact.is_primary && (
                                 <span className="rounded-full bg-slate-950 px-2.5 py-1 text-xs font-semibold text-white">
-                                  Primary
+                                  Utama
                                 </span>
                               )}
                               {contact.is_decision_maker && (
                                 <span className="rounded-full bg-sky-50 px-2.5 py-1 text-xs font-semibold text-sky-700">
-                                  Decision Maker
+                                  Pengambil Keputusan
                                 </span>
                               )}
                             </div>
@@ -428,7 +498,7 @@ function ClientDetailPage() {
                                 onClick={() => handleSetPrimary(contact.id)}
                                 type="button"
                               >
-                                Set Primary
+                                Jadikan Utama
                               </button>
                             )}
                             <button
@@ -436,22 +506,22 @@ function ClientDetailPage() {
                               onClick={() => startEditContact(contact)}
                               type="button"
                             >
-                              Edit
+                              Ubah
                             </button>
                             <button
                               className="rounded-md border border-red-200 px-3 py-2 text-xs font-semibold text-red-700 hover:bg-red-50"
                               onClick={() => handleDeleteContact(contact.id)}
                               type="button"
                             >
-                              Delete
+                              Hapus
                             </button>
                           </div>
                         </div>
 
                         <div className="mt-4 grid gap-4 sm:grid-cols-3">
-                          <InfoItem label="Phone" value={contact.mobile_phone || contact.phone || contact.whatsapp_number} />
+                          <InfoItem label="Nomor HP" value={contact.mobile_phone || contact.phone || contact.whatsapp_number} />
                           <InfoItem label="Email" value={contact.email} />
-                          <InfoItem label="Type" value={contact.contact_type} />
+                          <InfoItem label="Tipe" value={contact.contact_type} />
                         </div>
                       </div>
                     ))}
@@ -463,10 +533,10 @@ function ClientDetailPage() {
                 <div className="flex items-start justify-between gap-3">
                   <div>
                     <p className="text-sm font-medium text-slate-500">
-                      {editingContactId ? 'Edit Contact' : 'New Contact'}
+                      {editingContactId ? 'Ubah Contact' : 'Contact Baru'}
                     </p>
                     <h3 className="mt-1 text-base font-semibold text-slate-950">
-                      {editingContactId ? 'Update Contact Person' : 'Add Contact Person'}
+                      {editingContactId ? 'Perbarui Contact Person' : 'Tambah Contact Person'}
                     </h3>
                   </div>
                   {editingContactId && (
@@ -475,7 +545,7 @@ function ClientDetailPage() {
                       onClick={resetContactForm}
                       type="button"
                     >
-                      Cancel
+                      Batal
                     </button>
                   )}
                 </div>
@@ -494,7 +564,7 @@ function ClientDetailPage() {
 
                 <form className="mt-5 space-y-4" onSubmit={handleContactSubmit}>
                   <label className="block">
-                    <span className="text-sm font-medium text-slate-700">Contact Name</span>
+                    <span className="text-sm font-medium text-slate-700">Nama Contact</span>
                     <input
                       className="mt-1 h-10 w-full rounded-md border border-slate-300 px-3 text-sm outline-none focus:border-slate-950"
                       onChange={(event) => updateContactForm('contact_name', event.target.value)}
@@ -504,7 +574,7 @@ function ClientDetailPage() {
 
                   <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-1">
                     <label className="block">
-                      <span className="text-sm font-medium text-slate-700">Position</span>
+                      <span className="text-sm font-medium text-slate-700">Jabatan</span>
                       <input
                         className="mt-1 h-10 w-full rounded-md border border-slate-300 px-3 text-sm outline-none focus:border-slate-950"
                         onChange={(event) => updateContactForm('position', event.target.value)}
@@ -512,11 +582,11 @@ function ClientDetailPage() {
                       />
                     </label>
                     <label className="block">
-                      <span className="text-sm font-medium text-slate-700">Contact Type</span>
+                      <span className="text-sm font-medium text-slate-700">Tipe Contact</span>
                       <input
                         className="mt-1 h-10 w-full rounded-md border border-slate-300 px-3 text-sm outline-none focus:border-slate-950"
                         onChange={(event) => updateContactForm('contact_type', event.target.value)}
-                        placeholder="Primary PIC, Finance, Procurement"
+                        placeholder="PIC utama, Finance, Procurement"
                         value={contactForm.contact_type}
                       />
                     </label>
@@ -534,7 +604,7 @@ function ClientDetailPage() {
 
                   <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-1">
                     <label className="block">
-                      <span className="text-sm font-medium text-slate-700">Phone</span>
+                      <span className="text-sm font-medium text-slate-700">Telepon</span>
                       <input
                         className="mt-1 h-10 w-full rounded-md border border-slate-300 px-3 text-sm outline-none focus:border-slate-950"
                         onChange={(event) => updateContactForm('phone', event.target.value)}
@@ -542,7 +612,7 @@ function ClientDetailPage() {
                       />
                     </label>
                     <label className="block">
-                      <span className="text-sm font-medium text-slate-700">Mobile Phone</span>
+                      <span className="text-sm font-medium text-slate-700">Nomor HP</span>
                       <input
                         className="mt-1 h-10 w-full rounded-md border border-slate-300 px-3 text-sm outline-none focus:border-slate-950"
                         onChange={(event) => updateContactForm('mobile_phone', event.target.value)}
@@ -552,7 +622,7 @@ function ClientDetailPage() {
                   </div>
 
                   <label className="block">
-                    <span className="text-sm font-medium text-slate-700">WhatsApp Number</span>
+                    <span className="text-sm font-medium text-slate-700">Nomor WhatsApp</span>
                     <input
                       className="mt-1 h-10 w-full rounded-md border border-slate-300 px-3 text-sm outline-none focus:border-slate-950"
                       onChange={(event) => updateContactForm('whatsapp_number', event.target.value)}
@@ -568,7 +638,7 @@ function ClientDetailPage() {
                         onChange={(event) => updateContactForm('is_primary', event.target.checked)}
                         type="checkbox"
                       />
-                      Primary Contact
+                      Contact Person Utama
                     </label>
                     <label className="flex items-center gap-2 text-sm font-medium text-slate-700">
                       <input
@@ -577,12 +647,12 @@ function ClientDetailPage() {
                         onChange={(event) => updateContactForm('is_decision_maker', event.target.checked)}
                         type="checkbox"
                       />
-                      Decision Maker
+                      Pengambil Keputusan
                     </label>
                   </div>
 
                   <label className="block">
-                    <span className="text-sm font-medium text-slate-700">Notes</span>
+                    <span className="text-sm font-medium text-slate-700">Catatan</span>
                     <textarea
                       className="mt-1 min-h-20 w-full resize-y rounded-md border border-slate-300 px-3 py-2 text-sm outline-none focus:border-slate-950"
                       onChange={(event) => updateContactForm('notes', event.target.value)}
@@ -595,7 +665,7 @@ function ClientDetailPage() {
                     disabled={isSavingContact}
                     type="submit"
                   >
-                    {isSavingContact ? 'Saving contact...' : editingContactId ? 'Update Contact' : 'Save Contact'}
+                    {isSavingContact ? 'Menyimpan contact...' : editingContactId ? 'Perbarui Contact' : 'Simpan Contact'}
                   </button>
                 </form>
               </div>
@@ -604,7 +674,7 @@ function ClientDetailPage() {
 
           {activeTab === 'Activities' && (
             <div className="rounded-lg border border-slate-200 p-5">
-              <h3 className="text-base font-semibold text-slate-950">Activity Timeline</h3>
+              <h3 className="text-base font-semibold text-slate-950">Riwayat Aktivitas</h3>
               {activities.length === 0 ? (
                 <div className="mt-5">
                   <EmptyState>Belum ada aktivitas</EmptyState>
@@ -613,10 +683,12 @@ function ClientDetailPage() {
                 <div className="mt-5 space-y-4">
                   {activities.map((activity) => (
                     <div className="border-l-2 border-slate-200 pl-4" key={activity.id}>
-                      <p className="text-sm font-semibold text-slate-950">{activity.activity_title}</p>
+                      <p className="text-sm font-semibold text-slate-950">{translateActivityTitle(activity.activity_title)}</p>
                       <p className="mt-1 text-xs font-medium text-slate-400">{formatDate(activity.activity_at)}</p>
                       {activity.activity_description && (
-                        <p className="mt-2 text-sm leading-6 text-slate-600">{activity.activity_description}</p>
+                        <p className="mt-2 text-sm leading-6 text-slate-600">
+                          {translateActivityDescription(activity.activity_description)}
+                        </p>
                       )}
                     </div>
                   ))}
@@ -628,7 +700,7 @@ function ClientDetailPage() {
           {activeTab === 'Proposals' && (
             <div className="rounded-lg border border-slate-200">
               <div className="border-b border-slate-200 px-5 py-4">
-                <h3 className="text-base font-semibold text-slate-950">Client Proposals</h3>
+                <h3 className="text-base font-semibold text-slate-950">Proposal Client</h3>
               </div>
               {proposals.length === 0 ? (
                 <div className="p-5">
@@ -640,14 +712,14 @@ function ClientDetailPage() {
                     <div className="grid gap-4 px-5 py-4 lg:grid-cols-[minmax(0,1fr)_180px_180px]" key={proposal.id}>
                       <div>
                         <p className="font-semibold text-slate-950">{proposal.proposal_title}</p>
-                        <p className="mt-1 text-sm text-slate-500">{proposal.research_type || 'Research type not set'}</p>
+                        <p className="mt-1 text-sm text-slate-500">{proposal.research_type || 'Jenis riset belum diisi'}</p>
                       </div>
                       <div>
                         <p className="text-xs font-medium uppercase text-slate-400">Status</p>
                         <p className="mt-1 text-sm font-medium text-slate-800">{statusLabel(proposal.status)}</p>
                       </div>
                       <div>
-                        <p className="text-xs font-medium uppercase text-slate-400">Estimated Budget</p>
+                        <p className="text-xs font-medium uppercase text-slate-400">Estimasi Budget</p>
                         <p className="mt-1 text-sm font-medium text-slate-800">{formatCurrency(proposal.estimated_budget)}</p>
                       </div>
                     </div>
@@ -657,9 +729,9 @@ function ClientDetailPage() {
             </div>
           )}
 
-          {activeTab === 'Projects' && <EmptyState>Coming Soon</EmptyState>}
+          {activeTab === 'Projects' && <EmptyState>Segera tersedia</EmptyState>}
 
-          {activeTab === 'Documents' && <EmptyState>Coming Soon</EmptyState>}
+          {activeTab === 'Documents' && <EmptyState>Segera tersedia</EmptyState>}
         </div>
       </section>
     </div>

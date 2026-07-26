@@ -124,8 +124,8 @@ def create_client_contact(
         db,
         client,
         current_user,
-        "Contact person added",
-        f"{contact.contact_name} was added as a client contact.",
+        "Contact person ditambahkan",
+        f"{contact.contact_name} ditambahkan sebagai contact person client.",
         contact.id,
     )
     db.commit()
@@ -163,8 +163,8 @@ def update_client_contact(
         db,
         client,
         current_user,
-        "Contact person updated",
-        f"{contact.contact_name} contact details were updated.",
+        "Contact person diperbarui",
+        f"Detail contact person {contact.contact_name} telah diperbarui.",
         contact.id,
     )
     db.commit()
@@ -210,8 +210,8 @@ def delete_client_contact(
         db,
         client,
         current_user,
-        "Contact person deleted",
-        f"{contact_name} was removed from client contacts.",
+        "Contact person dihapus",
+        f"{contact_name} dihapus dari daftar contact person client.",
         contact_id,
     )
     db.commit()
