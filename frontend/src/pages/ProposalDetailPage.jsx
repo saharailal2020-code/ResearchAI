@@ -346,7 +346,15 @@ function ProposalDetailPage() {
 
               {proposal.status === 'Approved' && (
                 <div className="mt-4 rounded-md bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-700">
-                  Siap untuk Project Setup. Project belum dibuat pada sprint ini.
+                  {proposal.project_id ? 'Project sudah dibuat dari proposal ini.' : 'Siap untuk Project Setup.'}
+                  <div className="mt-3">
+                    <Link
+                      className="inline-flex rounded-md bg-slate-950 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-800"
+                      to={proposal.project_id ? `/projects/${proposal.project_id}` : `/proposals/${proposal.id}/setup-project`}
+                    >
+                      {proposal.project_id ? 'Buka Project' : 'Setup Project'}
+                    </Link>
+                  </div>
                 </div>
               )}
             </section>

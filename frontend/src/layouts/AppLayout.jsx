@@ -7,7 +7,7 @@ const navItems = [
   { label: 'Dasbor', path: '/dashboard', isReady: true },
   { label: 'Client', path: '/clients', isReady: true },
   { label: 'Proposal', path: '/proposals', isReady: true },
-  { label: 'Project', path: '/projects', isReady: false },
+  { label: 'Project', path: '/projects', isReady: true },
   { label: 'Data', path: '/data', isReady: false },
   { label: 'Analisis AI', path: '/ai-analysis', isReady: false },
   { label: 'Laporan', path: '/reports', isReady: false },
@@ -18,6 +18,7 @@ const pageTitles = {
   '/dashboard': 'Dasbor',
   '/clients': 'Client',
   '/proposals': 'Proposal',
+  '/projects': 'Project',
 }
 
 const roleLabels = {
@@ -69,8 +70,12 @@ function AppLayout() {
     (location.pathname.startsWith('/clients/')
       ? 'Detail Client'
       : location.pathname.startsWith('/proposals/')
-        ? 'Detail Proposal'
-        : 'Dasbor')
+        ? location.pathname.endsWith('/setup-project')
+          ? 'Setup Project'
+          : 'Detail Proposal'
+        : location.pathname.startsWith('/projects/')
+          ? 'Detail Project'
+          : 'Dasbor')
 
   if (isUnauthorized) {
     return <Navigate to="/login" replace />

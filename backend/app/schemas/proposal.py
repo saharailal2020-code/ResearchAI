@@ -52,6 +52,7 @@ class ProposalListItem(BaseModel):
 class ProposalDetail(BaseModel):
     id: uuid.UUID
     proposal_number: str
+    project_id: uuid.UUID | None = None
     client_id: uuid.UUID
     proposal_owner: ProposalOwnerResponse | None
     proposal_title: str

@@ -39,6 +39,7 @@ class Client(Base):
         cascade="all, delete-orphan",
     )
     proposals: Mapped[list["Proposal"]] = relationship(back_populates="client")
+    projects: Mapped[list["Project"]] = relationship(back_populates="client")
     activities: Mapped[list["ClientActivity"]] = relationship(
         back_populates="client",
         cascade="all, delete-orphan",

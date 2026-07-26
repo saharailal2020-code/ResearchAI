@@ -135,7 +135,7 @@ def list_proposals(
 def get_proposal_by_id(db: Session, proposal_id: uuid.UUID) -> Proposal | None:
     statement = (
         select(Proposal)
-        .options(joinedload(Proposal.client), joinedload(Proposal.proposal_owner))
+        .options(joinedload(Proposal.client), joinedload(Proposal.proposal_owner), joinedload(Proposal.project))
         .where(Proposal.id == proposal_id)
     )
     return db.execute(statement).scalar_one_or_none()

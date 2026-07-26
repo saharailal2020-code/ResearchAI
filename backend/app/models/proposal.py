@@ -34,3 +34,8 @@ class Proposal(Base):
 
     client: Mapped["Client"] = relationship(back_populates="proposals")
     proposal_owner: Mapped["User | None"] = relationship(foreign_keys=[proposal_owner_id])
+    project: Mapped["Project | None"] = relationship(back_populates="proposal", uselist=False)
+
+    @property
+    def project_id(self) -> uuid.UUID | None:
+        return self.project.id if self.project else None
