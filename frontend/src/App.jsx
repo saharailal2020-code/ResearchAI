@@ -11,6 +11,8 @@ import ProposalsPage from './pages/ProposalsPage.jsx'
 import ProjectDetailPage from './pages/ProjectDetailPage.jsx'
 import ProjectSetupReviewPage from './pages/ProjectSetupReviewPage.jsx'
 import ProjectsPage from './pages/ProjectsPage.jsx'
+import QuestionnaireCreatePage from './pages/QuestionnaireCreatePage.jsx'
+import QuestionnaireDetailPage from './pages/QuestionnaireDetailPage.jsx'
 import { getToken } from './services/api.js'
 
 function RequireAuth() {
@@ -36,6 +38,8 @@ function App() {
         <Route path="proposals/:proposalId" element={<ProposalDetailPage />} />
         <Route path="projects" element={<ProjectsPage />} />
         <Route path="projects/:projectId" element={<ProjectDetailPage />} />
+        <Route path="projects/:projectId/questionnaire/new" element={<QuestionnaireCreatePage />} />
+        <Route path="questionnaires/:questionnaireId" element={<QuestionnaireDetailPage />} />
       </Route>
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>

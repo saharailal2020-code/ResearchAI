@@ -16,3 +16,8 @@ export const projectStatusStyles = {
   Completed: 'bg-emerald-50 text-emerald-700 ring-emerald-200',
   Cancelled: 'bg-red-50 text-red-700 ring-red-200',
 }
+
+export const questionnaireStatusStyles = {
+  Draft: 'bg-slate-100 text-slate-700 ring-slate-200',
+  Ready: 'bg-emerald-50 text-emerald-700 ring-emerald-200',
+}

@@ -36,10 +36,11 @@ def get_project_by_id(db: Session, project_id: uuid.UUID) -> Project | None:
             joinedload(Project.proposal).joinedload(Proposal.proposal_owner),
             joinedload(Project.business_development_owner),
             joinedload(Project.project_manager),
+            joinedload(Project.questionnaires),
         )
         .where(Project.id == project_id)
     )
-    return db.execute(statement).scalar_one_or_none()
+    return db.execute(statement).unique().scalar_one_or_none()
 
 
 def get_project_by_proposal_id(db: Session, proposal_id: uuid.UUID) -> Project | None:
@@ -50,10 +51,11 @@ def get_project_by_proposal_id(db: Session, proposal_id: uuid.UUID) -> Project |
             joinedload(Project.proposal).joinedload(Proposal.proposal_owner),
             joinedload(Project.business_development_owner),
             joinedload(Project.project_manager),
+            joinedload(Project.questionnaires),
         )
         .where(Project.proposal_id == proposal_id)
     )
-    return db.execute(statement).scalar_one_or_none()
+    return db.execute(statement).unique().scalar_one_or_none()
 
 
 def record_project_activity(

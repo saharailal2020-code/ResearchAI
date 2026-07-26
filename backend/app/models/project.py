@@ -37,3 +37,8 @@ class Project(Base):
     proposal: Mapped["Proposal"] = relationship(back_populates="project")
     business_development_owner: Mapped["User | None"] = relationship(foreign_keys=[business_development_owner_id])
     project_manager: Mapped["User | None"] = relationship(foreign_keys=[project_manager_id])
+    questionnaires: Mapped[list["Questionnaire"]] = relationship(
+        back_populates="project",
+        cascade="all, delete-orphan",
+        order_by="Questionnaire.sort_order",
+    )

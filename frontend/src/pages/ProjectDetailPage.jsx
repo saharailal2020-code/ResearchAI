@@ -11,7 +11,7 @@ import {
 } from '../components/ui.jsx'
 import { getProject, updateProjectStatus } from '../services/projects'
 import { displayValue, formatCurrency, formatDate } from '../utils/formatters'
-import { projectStatusStyles } from '../utils/statusStyles'
+import { projectStatusStyles, questionnaireStatusStyles } from '../utils/statusStyles'
 
 const projectStatusLabels = {
   Setup: 'Setup',
@@ -229,12 +229,74 @@ function ProjectDetailPage() {
           <ProjectTimeline status={project.status} />
 
           <section>
-            <div className="mb-4">
-              <p className="text-base font-semibold text-slate-950">Modul Operasional</p>
-              <p className="mt-1 text-sm text-slate-500">Placeholder modul berikutnya di bawah Project.</p>
+            <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <p className="text-base font-semibold text-slate-950">Questionnaire</p>
+                <p className="mt-1 text-sm text-slate-500">Instrumen survey kuantitatif berdasarkan target respondent.</p>
+              </div>
+              <Link
+                className="inline-flex h-10 items-center justify-center rounded-md bg-slate-950 px-4 text-sm font-semibold text-white hover:bg-slate-800"
+                to={`/projects/${project.id}/questionnaire/new`}
+              >
+                + Tambah Questionnaire
+              </Link>
             </div>
-            <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
-              <PlaceholderCard description="Instrumen riset untuk project ini akan dikelola di sini." title="Questionnaire" />
+            <div className="rounded-lg border border-slate-200 bg-white">
+              {project.questionnaires?.length > 0 ? (
+                <div className="overflow-x-auto">
+                  <table className="min-w-[920px] w-full border-collapse text-left">
+                    <thead>
+                      <tr className="border-b border-slate-200 bg-slate-50 text-xs font-semibold uppercase text-slate-400">
+                        <th className="px-5 py-3">Questionnaire</th>
+                        <th className="px-5 py-3">Target Respondent</th>
+                        <th className="px-5 py-3">Instrument Type</th>
+                        <th className="px-5 py-3">Version</th>
+                        <th className="px-5 py-3">Status</th>
+                        <th className="px-5 py-3">Last Updated</th>
+                        <th className="px-5 py-3">Action</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-200">
+                      {project.questionnaires.map((questionnaire) => (
+                        <tr className="hover:bg-slate-50" key={questionnaire.id}>
+                          <td className="px-5 py-4 text-sm font-semibold text-slate-950">
+                            {questionnaire.questionnaire_name}
+                          </td>
+                          <td className="px-5 py-4 text-sm text-slate-700">{questionnaire.target_respondent}</td>
+                          <td className="px-5 py-4 text-sm text-slate-700">{questionnaire.instrument_type}</td>
+                          <td className="px-5 py-4 text-sm text-slate-700">{questionnaire.version_number}</td>
+                          <td className="px-5 py-4">
+                            <StatusBadge
+                              label={questionnaire.status}
+                              status={questionnaire.status}
+                              styles={questionnaireStatusStyles}
+                            />
+                          </td>
+                          <td className="px-5 py-4 text-sm text-slate-600">{formatDate(questionnaire.updated_at)}</td>
+                          <td className="px-5 py-4">
+                            <Link
+                              className="text-sm font-semibold text-slate-950 hover:text-slate-700"
+                              to={`/questionnaires/${questionnaire.id}`}
+                            >
+                              Buka
+                            </Link>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              ) : (
+                <div className="px-5 py-10 text-center">
+                  <p className="text-base font-semibold text-slate-950">Belum ada questionnaire</p>
+                  <p className="mt-2 text-sm text-slate-500">
+                    Tambahkan instrumen survey kuantitatif berdasarkan target respondent project ini.
+                  </p>
+                </div>
+              )}
+            </div>
+
+            <div className="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-3">
               <PlaceholderCard description="Target sample, quota, dan segment project akan dikelola di sini." title="Sample" />
               <PlaceholderCard description="Pelaksanaan pengumpulan data akan dimonitor di sini." title="Fieldwork" />
               <PlaceholderCard description="Pemeriksaan kualitas data project akan dikelola di sini." title="QC" />

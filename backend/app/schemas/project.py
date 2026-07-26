@@ -43,6 +43,22 @@ class ProjectProposalSummary(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
 
+class ProjectQuestionnaireSummary(BaseModel):
+    id: uuid.UUID
+    questionnaire_name: str
+    target_respondent: str
+    instrument_type: str
+    version_number: int
+    status: str
+    kobo_link: str | None
+    xlsform_link: str | None
+    sort_order: int
+    ready_at: datetime | None
+    updated_at: datetime
+
+    model_config = ConfigDict(from_attributes=True)
+
+
 class ProjectDetail(BaseModel):
     id: uuid.UUID
     project_number: str
@@ -60,5 +76,6 @@ class ProjectDetail(BaseModel):
     project_manager: ProjectUserResponse | None
     client: ProjectClientSummary
     proposal: ProjectProposalSummary
+    questionnaires: list[ProjectQuestionnaireSummary] = []
 
     model_config = ConfigDict(from_attributes=True)
