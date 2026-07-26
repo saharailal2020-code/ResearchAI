@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 
 import { getClient } from '../services/clients'
-import { getProposal } from '../services/proposals'
+import { getProposal, updateProposalStatus } from '../services/proposals'
 
 const statusStyles = {
   Draft: 'bg-slate-100 text-slate-700 ring-slate-200',
@@ -34,6 +34,54 @@ function statusDescription(status) {
   }
 
   return descriptions[status] || 'Status proposal belum dikenali.'
+}
+
+function statusActions(status) {
+  const actions = {
+    Draft: [
+      {
+        label: 'Kirim ke Client',
+        nextStatus: 'Sent',
+        style: 'bg-slate-950 text-white hover:bg-slate-800',
+      },
+    ],
+    Sent: [
+      {
+        label: 'Tandai Perlu Revisi',
+        nextStatus: 'Revised',
+        style: 'bg-amber-600 text-white hover:bg-amber-700',
+      },
+      {
+        label: 'Setujui Proposal',
+        nextStatus: 'Approved',
+        style: 'bg-emerald-600 text-white hover:bg-emerald-700',
+      },
+      {
+        label: 'Tolak Proposal',
+        nextStatus: 'Rejected',
+        style: 'bg-red-600 text-white hover:bg-red-700',
+      },
+    ],
+    Revised: [
+      {
+        label: 'Kirim Ulang ke Client',
+        nextStatus: 'Sent',
+        style: 'bg-slate-950 text-white hover:bg-slate-800',
+      },
+      {
+        label: 'Setujui Proposal',
+        nextStatus: 'Approved',
+        style: 'bg-emerald-600 text-white hover:bg-emerald-700',
+      },
+      {
+        label: 'Tolak Proposal',
+        nextStatus: 'Rejected',
+        style: 'bg-red-600 text-white hover:bg-red-700',
+      },
+    ],
+  }
+
+  return actions[status] || []
 }
 
 function formatCurrency(value) {
@@ -118,8 +166,11 @@ function ProposalDetailPage() {
   const [client, setClient] = useState(null)
   const [error, setError] = useState('')
   const [isLoading, setIsLoading] = useState(true)
+  const [actionError, setActionError] = useState('')
+  const [actionStatus, setActionStatus] = useState('')
 
   const contact = useMemo(() => primaryContact(client), [client])
+  const nextActions = useMemo(() => statusActions(proposal?.status), [proposal?.status])
 
   const loadProposal = useCallback(async () => {
     setIsLoading(true)
@@ -149,6 +200,20 @@ function ProposalDetailPage() {
   useEffect(() => {
     loadProposal()
   }, [loadProposal])
+
+  async function handleStatusAction(nextStatus) {
+    setActionError('')
+    setActionStatus(nextStatus)
+
+    try {
+      const updatedProposal = await updateProposalStatus(proposalId, nextStatus)
+      setProposal(updatedProposal)
+    } catch {
+      setActionError('Status proposal belum bisa diperbarui. Silakan coba lagi.')
+    } finally {
+      setActionStatus('')
+    }
+  }
 
   if (isLoading) {
     return <ProposalDetailSkeleton />
@@ -249,6 +314,36 @@ function ProposalDetailPage() {
             <section className="rounded-lg border border-slate-200 bg-white p-5">
               <p className="text-base font-semibold text-slate-950">Status & Next Step</p>
               <p className="mt-2 text-sm leading-6 text-slate-600">{statusDescription(proposal.status)}</p>
+
+              {nextActions.length > 0 ? (
+                <div className="mt-5">
+                  <p className="text-xs font-semibold uppercase text-slate-400">Next Business Action</p>
+                  <div className="mt-3 flex flex-wrap gap-3">
+                    {nextActions.map((action) => (
+                      <button
+                        className={`rounded-md px-4 py-2 text-sm font-semibold disabled:cursor-not-allowed disabled:bg-slate-300 disabled:text-slate-500 ${action.style}`}
+                        disabled={Boolean(actionStatus)}
+                        key={action.nextStatus}
+                        onClick={() => handleStatusAction(action.nextStatus)}
+                        type="button"
+                      >
+                        {actionStatus === action.nextStatus ? 'Memproses...' : action.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              ) : (
+                <div className="mt-5 rounded-md bg-slate-50 px-4 py-3 text-sm font-medium text-slate-600">
+                  Tidak ada aksi lanjutan untuk status ini.
+                </div>
+              )}
+
+              {actionError && (
+                <div className="mt-4 rounded-md bg-red-50 px-4 py-3 text-sm font-semibold text-red-700">
+                  {actionError}
+                </div>
+              )}
+
               {proposal.status === 'Approved' && (
                 <div className="mt-4 rounded-md bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-700">
                   Siap untuk Project Setup. Project belum dibuat pada sprint ini.

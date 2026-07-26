@@ -9,3 +9,8 @@ export async function getProposal(proposalId) {
   const response = await api.get(`/proposals/${proposalId}`)
   return response.data
 }
+
+export async function updateProposalStatus(proposalId, status) {
+  const response = await api.patch(`/proposals/${proposalId}/status`, { status })
+  return response.data
+}
