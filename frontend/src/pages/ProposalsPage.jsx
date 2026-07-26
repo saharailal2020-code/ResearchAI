@@ -133,12 +133,12 @@ function ProposalsPage() {
                 <p className="text-sm font-medium text-slate-500">Manajemen Proposal</p>
                 <h2 className="mt-1 text-lg font-semibold text-slate-950">Daftar Proposal</h2>
               </div>
-              <button
-                className="h-10 shrink-0 whitespace-nowrap rounded-md bg-slate-950 px-4 text-sm font-semibold text-white hover:bg-slate-800"
-                type="button"
+              <Link
+                className="inline-flex h-10 shrink-0 items-center justify-center whitespace-nowrap rounded-md bg-slate-950 px-4 text-sm font-semibold text-white hover:bg-slate-800"
+                to="/proposals/new"
               >
                 + Proposal Baru
-              </button>
+              </Link>
             </div>
 
             <div className="grid gap-2 md:grid-cols-2 xl:grid-cols-[minmax(220px,1fr)_160px_minmax(220px,1fr)_180px_220px]">
