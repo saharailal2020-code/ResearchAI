@@ -1,6 +1,6 @@
 from fastapi import APIRouter
 
-from app.api.v1 import auth, clients, db, projects, proposals, questionnaires
+from app.api.v1 import auth, clients, db, projects, proposals, questionnaires, sampling
 
 router = APIRouter()
 
@@ -20,4 +20,5 @@ api_router.include_router(clients.router)
 api_router.include_router(proposals.router)
 api_router.include_router(projects.router)
 api_router.include_router(questionnaires.router)
+api_router.include_router(sampling.router)
 api_router.include_router(db.router)

@@ -31,3 +31,4 @@ class Questionnaire(Base):
     )
 
     project: Mapped["Project"] = relationship(back_populates="questionnaires")
+    sample_groups: Mapped[list["SampleGroup"]] = relationship(back_populates="questionnaire")

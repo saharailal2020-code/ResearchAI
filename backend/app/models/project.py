@@ -42,3 +42,8 @@ class Project(Base):
         cascade="all, delete-orphan",
         order_by="Questionnaire.sort_order",
     )
+    sample_groups: Mapped[list["SampleGroup"]] = relationship(
+        back_populates="project",
+        cascade="all, delete-orphan",
+        order_by="SampleGroup.sort_order",
+    )
