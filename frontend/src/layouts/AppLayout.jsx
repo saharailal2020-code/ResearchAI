@@ -6,7 +6,7 @@ import { getCurrentUser, logoutUser } from '../services/auth'
 const navItems = [
   { label: 'Dasbor', path: '/dashboard', isReady: true },
   { label: 'Client', path: '/clients', isReady: true },
-  { label: 'Proposal', path: '/proposals', isReady: false },
+  { label: 'Proposal', path: '/proposals', isReady: true },
   { label: 'Project', path: '/projects', isReady: false },
   { label: 'Data', path: '/data', isReady: false },
   { label: 'Analisis AI', path: '/ai-analysis', isReady: false },
@@ -17,6 +17,7 @@ const pageTitles = {
   '/': 'Dasbor',
   '/dashboard': 'Dasbor',
   '/clients': 'Client',
+  '/proposals': 'Proposal',
 }
 
 const roleLabels = {
@@ -64,7 +65,12 @@ function AppLayout() {
   }
 
   const pageTitle =
-    pageTitles[location.pathname] || (location.pathname.startsWith('/clients/') ? 'Detail Client' : 'Dasbor')
+    pageTitles[location.pathname] ||
+    (location.pathname.startsWith('/clients/')
+      ? 'Detail Client'
+      : location.pathname.startsWith('/proposals/')
+        ? 'Detail Proposal'
+        : 'Dasbor')
 
   if (isUnauthorized) {
     return <Navigate to="/login" replace />
