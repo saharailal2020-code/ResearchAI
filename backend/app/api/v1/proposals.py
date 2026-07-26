@@ -28,8 +28,10 @@ router = APIRouter(prefix="/proposals", tags=["proposals"])
 def to_list_item(proposal: Proposal) -> ProposalListItem:
     return ProposalListItem(
         id=proposal.id,
+        proposal_number=proposal.proposal_number,
         client_id=proposal.client_id,
         client_name=proposal.client.client_name,
+        proposal_owner=proposal.proposal_owner,
         proposal_title=proposal.proposal_title,
         research_type=proposal.research_type,
         estimated_budget=proposal.estimated_budget,
@@ -85,7 +87,7 @@ def patch_proposal(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ) -> ProposalDetail:
-    proposal = update_proposal(db, proposal_id, payload)
+    proposal = update_proposal(db, proposal_id, payload, current_user)
     if proposal is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Proposal not found")
     return proposal
@@ -98,7 +100,7 @@ def patch_proposal_status(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ) -> ProposalDetail:
-    proposal = update_proposal_status(db, proposal_id, payload)
+    proposal = update_proposal_status(db, proposal_id, payload, current_user)
     if proposal is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Proposal not found")
     return proposal

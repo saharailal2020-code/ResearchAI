@@ -12,7 +12,9 @@ class Proposal(Base):
     __tablename__ = "proposals"
 
     id: Mapped[uuid.UUID] = mapped_column(primary_key=True, default=uuid.uuid4)
+    proposal_number: Mapped[str] = mapped_column(String(50), unique=True, index=True, nullable=False)
     client_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("clients.id"), index=True, nullable=False)
+    proposal_owner_id: Mapped[uuid.UUID | None] = mapped_column(ForeignKey("users.id"), index=True, nullable=True)
     proposal_title: Mapped[str] = mapped_column(String(250), index=True, nullable=False)
     research_type: Mapped[str | None] = mapped_column(String(100), index=True, nullable=True)
     research_objective: Mapped[str | None] = mapped_column(Text, nullable=True)
@@ -31,3 +33,4 @@ class Proposal(Base):
     )
 
     client: Mapped["Client"] = relationship(back_populates="proposals")
+    proposal_owner: Mapped["User | None"] = relationship(foreign_keys=[proposal_owner_id])
